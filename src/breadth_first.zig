@@ -35,15 +35,18 @@ pub const BreadthFirstWalker = struct {
                 full_entry_path[self.currentPath.len] = std.fs.path.sep;
                 std.mem.copy(u8, full_entry_path[self.currentPath.len + 1 ..], entry.name);
     
+                // Remember this directory, we are going to traverse it later
                 if (entry.kind == std.fs.Dir.Entry.Kind.Directory) {
-                    const new_dir = try self.allocator.create(std.atomic.Queue([]u8).Node);
-                    new_dir.* = std.atomic.Queue([]u8).Node {
-                        .next = undefined,
-                        .prev = undefined,
-                        .data = full_entry_path,
-                    };
-    
-                    self.pathsToScan.put(new_dir);
+                    if (self.currentDepth < self.maxDepth) {
+                        const new_dir = try self.allocator.create(std.atomic.Queue([]u8).Node);
+                        new_dir.* = std.atomic.Queue([]u8).Node {
+                            .next = undefined,
+                            .prev = undefined,
+                            .data = full_entry_path,
+                        };
+        
+                        self.pathsToScan.put(new_dir);
+                    }
                 }
     
                 return Entry{

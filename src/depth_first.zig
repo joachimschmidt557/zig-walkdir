@@ -36,19 +36,22 @@ pub const DepthFirstWalker = struct {
                 std.mem.copy(u8, full_entry_path[self.currentPath.len + 1 ..], entry.name);
     
                 if (entry.kind == std.fs.Dir.Entry.Kind.Directory) {
-                    const new_dir = try self.allocator.create(std.atomic.Stack(*std.fs.Dir).Node);
-                    new_dir.* = std.atomic.Stack(*std.fs.Dir).Node {
-                        .next = undefined,
-                        .data = &self.currentDir,
-                    };
-
-                    // Save the current opened directory to the stack
-                    // so we continue traversing it later on
-                    self.recurseStack.put(new_dir);
-
-                    // Go one level deeper
-                    const opened_dir = try std.fs.Dir.open(self.allocator, full_entry_path);
-                    self.currentDir = opened_dir;
+                    if (self.currentDepth < self.maxDepth) {
+                        const new_dir = try self.allocator.create(std.atomic.Stack(*std.fs.Dir).Node);
+                        new_dir.* = std.atomic.Stack(*std.fs.Dir).Node {
+                            .next = undefined,
+                            .data = &self.currentDir,
+                        };
+    
+                        // Save the current opened directory to the stack
+                        // so we continue traversing it later on
+                        self.recurseStack.put(new_dir);
+    
+                        // Go one level deeper
+                        const opened_dir = try std.fs.Dir.open(self.allocator, full_entry_path);
+                        self.currentDir = opened_dir;
+                        self.currentDepth += 1;
+                    }
                 }
     
                 return Entry{
@@ -65,6 +68,7 @@ pub const DepthFirstWalker = struct {
                     // Go back up one level again
                     self.currentDir = node.data;
                     self.allocator.destroy(node);
+                    self.currentDepth -= 1;
 
                     continue :outer;
                 }

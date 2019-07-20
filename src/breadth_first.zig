@@ -2,6 +2,11 @@ const std = @import("std");
 
 const Entry = @import("entry.zig").Entry;
 
+const PathDepthPair = struct {
+    path         : []u8,
+    depth        : u32,
+};
+
 pub const BreadthFirstWalker = struct {
     startPath    : []u8,
     pathsToScan  : std.atomic.Queue([]u8),

@@ -4,10 +4,23 @@ const testing = std.testing;
 const BreadthFirstWalker = @import("breadth_first.zig").BreadthFirstWalker;
 const DepthFirstWalker = @import("depth_first.zig").DepthFirstWalker;
 
-export fn add(a: i32, b: i32) i32 {
-    return a + b;
-}
+pub const TraversalMethod = enum {
+    BreadthFirst,
+    DepthFirst,
+};
 
-test "basic add functionality" {
-    testing.expect(add(3, 7) == 10);
-}
+pub const WalkDirOptions = struct {
+    method         : TraversalMethod,
+    followSymlinks : bool,
+    includeHidden  : bool,
+
+    const Self = @This();
+
+    pub fn default() Self {
+        return Self{
+            .method = BreadthFirst,
+            .followSymlinks = false,
+            .includeHidden = false,
+        };
+    }
+};

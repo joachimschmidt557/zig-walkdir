@@ -7,6 +7,7 @@ pub const DepthFirstWalker = struct {
     recurseStack : std.atomic.Stack(*std.fs.Dir),
     allocator    : *std.mem.Allocator,
     maxDepth     : u32,
+    hidden       : bool,
 
     currentDir   : std.fs.Dir,
     currentPath  : []u8,
@@ -20,6 +21,7 @@ pub const DepthFirstWalker = struct {
             .recurseStack = std.atomic.Stack(*std.fs.Dir).init(),
             .allocator    = alloc,
             .maxDepth     = 0,
+            .hidden       = False,
 
             .currentDir   = try std.fs.Dir.open(alloc, path),
             .currentPath  = path,

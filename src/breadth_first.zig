@@ -12,6 +12,7 @@ pub const BreadthFirstWalker = struct {
     pathsToScan  : std.atomic.Queue([]u8),
     allocator    : *std.mem.Allocator,
     maxDepth     : u32,
+    hidden       : bool,
 
     currentDir   : std.fs.Dir,
     currentPath  : []u8,
@@ -25,6 +26,7 @@ pub const BreadthFirstWalker = struct {
             .pathsToScan  = std.atomic.Queue([]u8).init(),
             .allocator    = alloc,
             .maxDepth     = 0,
+            .hidden       = False,
 
             .currentDir   = try std.fs.Dir.open(alloc, path),
             .currentPath  = path,

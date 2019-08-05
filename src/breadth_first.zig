@@ -9,7 +9,7 @@ const PathDepthPair = struct {
 
 pub const BreadthFirstWalker = struct {
     startPath    : []u8,
-    pathsToScan  : std.atomic.Queue([]u8),
+    pathsToScan  : std.atomic.Queue(PathDepthPair),
     allocator    : *std.mem.Allocator,
     maxDepth     : u32,
     hidden       : bool,
@@ -23,7 +23,7 @@ pub const BreadthFirstWalker = struct {
     pub fn init(alloc: *std.mem.Allocator, path: []u8) !Self {
         return Self{
             .startPath    = path,
-            .pathsToScan  = std.atomic.Queue([]u8).init(),
+            .pathsToScan  = std.atomic.Queue(PathDepthPair).init(),
             .allocator    = alloc,
             .maxDepth     = 0,
             .hidden       = False,
@@ -45,11 +45,17 @@ pub const BreadthFirstWalker = struct {
                 // Remember this directory, we are going to traverse it later
                 if (entry.kind == std.fs.Dir.Entry.Kind.Directory) {
                     if (self.currentDepth < self.maxDepth) {
-                        const new_dir = try self.allocator.create(std.atomic.Queue([]u8).Node);
-                        new_dir.* = std.atomic.Queue([]u8).Node {
+                        const pair = try self.allocator.create(PathDepthPair);
+                        pair.* = PathDepthPair {
+                            .path = full_entry_path,
+                            .depth = self.currentDepth + 1,
+                        };
+
+                        const new_dir = try self.allocator.create(std.atomic.Queue(PathDepthPair).Node);
+                        new_dir.* = std.atomic.Queue(PathDepthPair).Node {
                             .next = undefined,
                             .prev = undefined,
-                            .data = full_entry_path,
+                            .data = pair,
                         };
         
                         self.pathsToScan.put(new_dir);
@@ -66,8 +72,13 @@ pub const BreadthFirstWalker = struct {
                 // No entries left in the current dir
                 self.currentDir.close();
                 if (self.pathsToScan.get()) |node| {
-                    self.currentPath = node.data;
+                    const pair = node.data;
+
+                    self.currentPath = pair.path;
+                    self.currentDepth = pair.depth;
                     self.currentDir = try std.fs.Dir.open(self.allocator, self.currentPath);
+
+                    self.allocator.destroy(pair);
                     self.allocator.destroy(node);
 
                     continue :outer;

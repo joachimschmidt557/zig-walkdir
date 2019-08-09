@@ -21,7 +21,7 @@ pub const DepthFirstWalker = struct {
             .recurseStack = std.atomic.Stack(*std.fs.Dir).init(),
             .allocator    = alloc,
             .maxDepth     = 0,
-            .hidden       = False,
+            .hidden       = false,
 
             .currentDir   = try std.fs.Dir.open(alloc, path),
             .currentPath  = path,

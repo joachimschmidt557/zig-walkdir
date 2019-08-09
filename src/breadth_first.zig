@@ -26,7 +26,7 @@ pub const BreadthFirstWalker = struct {
             .pathsToScan  = std.atomic.Queue(PathDepthPair).init(),
             .allocator    = alloc,
             .maxDepth     = 0,
-            .hidden       = False,
+            .hidden       = false,
 
             .currentDir   = try std.fs.Dir.open(alloc, path),
             .currentPath  = path,

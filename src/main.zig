@@ -24,3 +24,6 @@ pub const WalkDirOptions = struct {
         };
     }
 };
+
+pub const Walker = struct {
+};

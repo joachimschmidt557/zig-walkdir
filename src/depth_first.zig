@@ -47,7 +47,7 @@ pub const DepthFirstWalker = struct {
     
                         // Save the current opened directory to the stack
                         // so we continue traversing it later on
-                        self.recurseStack.put(new_dir);
+                        self.recurseStack.push(new_dir);
     
                         // Go one level deeper
                         const opened_dir = try std.fs.Dir.open(self.allocator, full_entry_path);

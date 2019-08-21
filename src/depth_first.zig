@@ -68,7 +68,7 @@ pub const DepthFirstWalker = struct {
                 if (self.recurseStack.pop()) |node| {
 
                     // Go back up one level again
-                    self.currentDir = node.data;
+                    self.currentDir = node.data.*;
                     self.allocator.destroy(node);
                     self.currentDepth -= 1;
 

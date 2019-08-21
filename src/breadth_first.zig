@@ -9,7 +9,7 @@ const PathDepthPair = struct {
 
 pub const BreadthFirstWalker = struct {
     startPath    : []u8,
-    pathsToScan  : std.atomic.Queue(PathDepthPair),
+    pathsToScan  : std.atomic.Queue(*PathDepthPair),
     allocator    : *std.mem.Allocator,
     maxDepth     : u32,
     hidden       : bool,
@@ -23,7 +23,7 @@ pub const BreadthFirstWalker = struct {
     pub fn init(alloc: *std.mem.Allocator, path: []u8) !Self {
         return Self{
             .startPath    = path,
-            .pathsToScan  = std.atomic.Queue(PathDepthPair).init(),
+            .pathsToScan  = std.atomic.Queue(*PathDepthPair).init(),
             .allocator    = alloc,
             .maxDepth     = 0,
             .hidden       = false,
@@ -51,8 +51,8 @@ pub const BreadthFirstWalker = struct {
                             .depth = self.currentDepth + 1,
                         };
 
-                        const new_dir = try self.allocator.create(std.atomic.Queue(PathDepthPair).Node);
-                        new_dir.* = std.atomic.Queue(PathDepthPair).Node {
+                        const new_dir = try self.allocator.create(std.atomic.Queue(*PathDepthPair).Node);
+                        new_dir.* = std.atomic.Queue(*PathDepthPair).Node {
                             .next = undefined,
                             .prev = undefined,
                             .data = pair,
@@ -72,7 +72,7 @@ pub const BreadthFirstWalker = struct {
                 // No entries left in the current dir
                 self.currentDir.close();
                 if (self.pathsToScan.get()) |node| {
-                    const pair = node.data;
+                    const pair = node.data.*;
 
                     self.currentPath = pair.path;
                     self.currentDepth = pair.depth;

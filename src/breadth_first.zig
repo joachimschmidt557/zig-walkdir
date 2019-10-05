@@ -20,13 +20,13 @@ pub const BreadthFirstWalker = struct {
 
     pub const Self = @This();
 
-    pub fn init(alloc: *std.mem.Allocator, path: []u8) !Self {
+    pub fn init(alloc: *std.mem.Allocator, path: []u8, max_depth: u32, include_hidden: bool) !Self {
         return Self{
             .startPath    = path,
             .pathsToScan  = std.atomic.Queue(*PathDepthPair).init(),
             .allocator    = alloc,
-            .maxDepth     = 0,
-            .hidden       = false,
+            .maxDepth     = max_depth,
+            .hidden       = include_hidden,
 
             .currentDir   = try std.fs.Dir.open(alloc, path),
             .currentPath  = path,
@@ -78,7 +78,7 @@ pub const BreadthFirstWalker = struct {
                     self.currentDepth = pair.depth;
                     self.currentDir = try std.fs.Dir.open(self.allocator, self.currentPath);
 
-                    self.allocator.destroy(pair);
+                    self.allocator.destroy(&pair);
                     self.allocator.destroy(node);
 
                     continue :outer;

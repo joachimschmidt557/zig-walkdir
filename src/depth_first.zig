@@ -15,13 +15,13 @@ pub const DepthFirstWalker = struct {
 
     pub const Self = @This();
 
-    pub fn init(alloc: *std.mem.Allocator, path: []u8) !Self {
+    pub fn init(alloc: *std.mem.Allocator, path: []u8, max_depth: u32, include_hidden: bool) !Self {
         return Self{
             .startPath    = path,
             .recurseStack = std.atomic.Stack(*std.fs.Dir).init(),
             .allocator    = alloc,
-            .maxDepth     = 0,
-            .hidden       = false,
+            .maxDepth     = max_depth,
+            .hidden       = include_hidden,
 
             .currentDir   = try std.fs.Dir.open(alloc, path),
             .currentPath  = path,

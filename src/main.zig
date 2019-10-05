@@ -26,4 +26,14 @@ pub const WalkDirOptions = struct {
 };
 
 pub const Walker = struct {
+    pub const Self = @This();
+
+    pub fn init(alloc: *std.mem.Allocator) !Self {
+    }
+
+    pub fn next(self: *Self) !?Entry {
+    }
+};
+
+pub const MultiWalker = struct {
 };

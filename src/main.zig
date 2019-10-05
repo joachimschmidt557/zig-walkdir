@@ -15,6 +15,7 @@ pub const WalkDirOptions = struct {
     method          : TraversalMethod,
     follow_symlinks : bool,
     include_hidden  : bool,
+    max_depth       : ?u32,
 
     const Self = @This();
 
@@ -23,6 +24,7 @@ pub const WalkDirOptions = struct {
             .method          = TraversalMethod.BreadthFirst,
             .follow_symlinks = false,
             .include_hidden  = false,
+            .max_depth       = null,
         };
     }
 };

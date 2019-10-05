@@ -32,7 +32,7 @@ pub const Walker = struct {
 
     pub fn init(alloc: *std.mem.Allocator, path: []u8, options: WalkDirOptions) !Self {
         return Self{
-            .internal_walker = DepthFirstWalker.init(alloc, path),
+            .internal_walker = try DepthFirstWalker.init(alloc, path),
         };
     }
 

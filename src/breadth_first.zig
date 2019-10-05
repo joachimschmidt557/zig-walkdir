@@ -37,6 +37,11 @@ pub const BreadthFirstWalker = struct {
     pub fn next(self: *Self) !?Entry {
         outer: while (true) {
             if (try self.currentDir.next()) |entry| {
+                // Check if the entry is hidden
+                if (!self.hidden and entry.name[0] == '.') {
+                    continue :outer;
+                }
+
                 const full_entry_path = try self.allocator.alloc(u8, self.currentPath.len + entry.name.len + 1);
                 std.mem.copy(u8, full_entry_path, self.currentPath);
                 full_entry_path[self.currentPath.len] = std.fs.path.sep;

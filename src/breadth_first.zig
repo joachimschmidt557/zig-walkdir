@@ -11,7 +11,7 @@ pub const BreadthFirstWalker = struct {
     startPath    : []u8,
     pathsToScan  : std.atomic.Queue(*PathDepthPair),
     allocator    : *std.mem.Allocator,
-    maxDepth     : u32,
+    maxDepth     : ?u32,
     hidden       : bool,
 
     currentDir   : std.fs.Dir,
@@ -20,7 +20,7 @@ pub const BreadthFirstWalker = struct {
 
     pub const Self = @This();
 
-    pub fn init(alloc: *std.mem.Allocator, path: []u8, max_depth: u32, include_hidden: bool) !Self {
+    pub fn init(alloc: *std.mem.Allocator, path: []u8, max_depth: ?u32, include_hidden: bool) !Self {
         return Self{
             .startPath    = path,
             .pathsToScan  = std.atomic.Queue(*PathDepthPair).init(),
@@ -43,8 +43,14 @@ pub const BreadthFirstWalker = struct {
                 std.mem.copy(u8, full_entry_path[self.currentPath.len + 1 ..], entry.name);
     
                 // Remember this directory, we are going to traverse it later
-                if (entry.kind == std.fs.Dir.Entry.Kind.Directory) {
-                    if (self.currentDepth < self.maxDepth) {
+                blk: {
+                    if (entry.kind == std.fs.Dir.Entry.Kind.Directory) {
+                        if (self.maxDepth) |max_depth| {
+                            if (self.currentDepth >= max_depth) {
+                                break :blk;
+                            }
+                        }
+
                         const pair = try self.allocator.create(PathDepthPair);
                         pair.* = PathDepthPair {
                             .path = full_entry_path,
@@ -57,7 +63,7 @@ pub const BreadthFirstWalker = struct {
                             .prev = undefined,
                             .data = pair,
                         };
-        
+
                         self.pathsToScan.put(new_dir);
                     }
                 }

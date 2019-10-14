@@ -58,8 +58,8 @@ pub const DepthFirstWalker = struct {
     
                 return Entry{
                     .name = entry.name,
-                    .absolutePath = full_entry_path,
-                    .relativePath = full_entry_path[self.startPath.len + 1..],
+                    .absolute_path = full_entry_path,
+                    .relative_path = full_entry_path[self.startPath.len + 1..],
                     .kind = entry.kind,
                 };
             } else {

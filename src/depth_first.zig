@@ -5,13 +5,13 @@ const Entry = @import("entry.zig").Entry;
 const PathDirTuple = struct {
     dir: std.fs.Dir,
     iter: std.fs.Dir.Iterator,
-    path: []u8,
+    path: []const u8,
 };
 
 const RecurseStack = std.atomic.Stack(*PathDirTuple);
 
 pub const DepthFirstWalker = struct {
-    startPath    : []u8,
+    startPath    : []const u8,
     recurseStack : RecurseStack,
     allocator    : *std.mem.Allocator,
     maxDepth     : ?u32,
@@ -19,12 +19,12 @@ pub const DepthFirstWalker = struct {
 
     currentDir   : std.fs.Dir,
     currentIter  : std.fs.Dir.Iterator,
-    currentPath  : []u8,
+    currentPath  : []const u8,
     currentDepth : u32,
 
     pub const Self = @This();
 
-    pub fn init(alloc: *std.mem.Allocator, path: []u8, max_depth: ?u32, include_hidden: bool) !Self {
+    pub fn init(alloc: *std.mem.Allocator, path: []const u8, max_depth: ?u32, include_hidden: bool) !Self {
         var top_dir = try std.fs.Dir.open(path);
 
         return Self{

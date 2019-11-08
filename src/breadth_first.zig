@@ -2,22 +2,24 @@ const std = @import("std");
 
 const Entry = @import("entry.zig").Entry;
 
+const PathsQueue = std.atomic.Queue(*PathDepthPair);
+
 const PathDepthPair = struct {
     path         : []u8,
     depth        : u32,
 };
 
 pub const BreadthFirstWalker = struct {
-    startPath    : []u8,
-    pathsToScan  : std.atomic.Queue(*PathDepthPair),
-    allocator    : *std.mem.Allocator,
-    maxDepth     : ?u32,
-    hidden       : bool,
+    start_path     : []u8,
+    paths_to_scan  : PathsQueue,
+    allocator      : *std.mem.Allocator,
+    max_depth      : ?u32,
+    hidden         : bool,
 
-    currentDir   : std.fs.Dir,
-    currentIter  : std.fs.Dir.Iterator,
-    currentPath  : []u8,
-    currentDepth : u32,
+    current_dir    : std.fs.Dir,
+    current_iter   : std.fs.Dir.Iterator,
+    current_path   : []u8,
+    current_depth  : u32,
 
     pub const Self = @This();
 
@@ -25,37 +27,37 @@ pub const BreadthFirstWalker = struct {
         var topDir = try std.fs.Dir.open(path);
 
         return Self{
-            .startPath    = path,
-            .pathsToScan  = std.atomic.Queue(*PathDepthPair).init(),
+            .start_path    = path,
+            .paths_to_scan  = PathsQueue.init(),
             .allocator    = alloc,
-            .maxDepth     = max_depth,
+            .max_depth     = max_depth,
             .hidden       = include_hidden,
 
-            .currentDir   = topDir,
-            .currentIter  = topDir.iterate(),
-            .currentPath  = path,
-            .currentDepth = 0,
+            .current_dir   = topDir,
+            .current_iter  = topDir.iterate(),
+            .current_path  = path,
+            .current_depth = 0,
         };
     }
 
     pub fn next(self: *Self) !?Entry {
         outer: while (true) {
-            if (try self.currentIter.next()) |entry| {
+            if (try self.current_iter.next()) |entry| {
                 // Check if the entry is hidden
                 if (!self.hidden and entry.name[0] == '.') {
                     continue :outer;
                 }
 
-                const full_entry_path = try self.allocator.alloc(u8, self.currentPath.len + entry.name.len + 1);
-                std.mem.copy(u8, full_entry_path, self.currentPath);
-                full_entry_path[self.currentPath.len] = std.fs.path.sep;
-                std.mem.copy(u8, full_entry_path[self.currentPath.len + 1 ..], entry.name);
+                const full_entry_path = try self.allocator.alloc(u8, self.current_path.len + entry.name.len + 1);
+                std.mem.copy(u8, full_entry_path, self.current_path);
+                full_entry_path[self.current_path.len] = std.fs.path.sep;
+                std.mem.copy(u8, full_entry_path[self.current_path.len + 1 ..], entry.name);
     
                 // Remember this directory, we are going to traverse it later
                 blk: {
                     if (entry.kind == std.fs.Dir.Entry.Kind.Directory) {
-                        if (self.maxDepth) |max_depth| {
-                            if (self.currentDepth >= max_depth) {
+                        if (self.max_depth) |max_depth| {
+                            if (self.current_depth >= max_depth) {
                                 break :blk;
                             }
                         }
@@ -63,36 +65,36 @@ pub const BreadthFirstWalker = struct {
                         const pair = try self.allocator.create(PathDepthPair);
                         pair.* = PathDepthPair {
                             .path = full_entry_path,
-                            .depth = self.currentDepth + 1,
+                            .depth = self.current_depth + 1,
                         };
 
-                        const new_dir = try self.allocator.create(std.atomic.Queue(*PathDepthPair).Node);
-                        new_dir.* = std.atomic.Queue(*PathDepthPair).Node {
+                        const new_dir = try self.allocator.create(PathsQueue.Node);
+                        new_dir.* = PathsQueue.Node {
                             .next = undefined,
                             .prev = undefined,
                             .data = pair,
                         };
 
-                        self.pathsToScan.put(new_dir);
+                        self.paths_to_scan.put(new_dir);
                     }
                 }
     
                 return Entry{
                     .name = entry.name,
                     .absolute_path = full_entry_path,
-                    .relative_path = full_entry_path[self.startPath.len + 1..],
+                    .relative_path = full_entry_path[self.start_path.len + 1..],
                     .kind = entry.kind,
                 };
             } else {
                 // No entries left in the current dir
-                self.currentDir.close();
-                if (self.pathsToScan.get()) |node| {
+                self.current_dir.close();
+                if (self.paths_to_scan.get()) |node| {
                     const pair = node.data.*;
 
-                    self.currentPath = pair.path;
-                    self.currentDepth = pair.depth;
-                    self.currentDir = try std.fs.Dir.open(self.currentPath);
-                    self.currentIter = self.currentDir.iterate();
+                    self.current_path = pair.path;
+                    self.current_depth = pair.depth;
+                    self.current_dir = try std.fs.Dir.open(self.current_path);
+                    self.current_iter = self.current_dir.iterate();
 
                     self.allocator.destroy(&pair);
                     self.allocator.destroy(node);

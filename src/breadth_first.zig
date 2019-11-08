@@ -28,7 +28,7 @@ pub const BreadthFirstWalker = struct {
             .maxDepth     = max_depth,
             .hidden       = include_hidden,
 
-            .currentDir   = try std.fs.Dir.open(alloc, path),
+            .currentDir   = try std.fs.Dir.open(path),
             .currentPath  = path,
             .currentDepth = 0,
         };
@@ -87,7 +87,7 @@ pub const BreadthFirstWalker = struct {
 
                     self.currentPath = pair.path;
                     self.currentDepth = pair.depth;
-                    self.currentDir = try std.fs.Dir.open(self.allocator, self.currentPath);
+                    self.currentDir = try std.fs.Dir.open(self.currentPath);
 
                     self.allocator.destroy(&pair);
                     self.allocator.destroy(node);

@@ -23,7 +23,7 @@ pub const DepthFirstWalker = struct {
             .maxDepth     = max_depth,
             .hidden       = include_hidden,
 
-            .currentDir   = try std.fs.Dir.open(alloc, path),
+            .currentDir   = try std.fs.Dir.open(path),
             .currentPath  = path,
             .currentDepth = 0,
         };
@@ -50,7 +50,7 @@ pub const DepthFirstWalker = struct {
                         self.recurseStack.push(new_dir);
     
                         // Go one level deeper
-                        const opened_dir = try std.fs.Dir.open(self.allocator, full_entry_path);
+                        const opened_dir = try std.fs.Dir.open(full_entry_path);
                         self.currentDir = opened_dir;
                         self.currentDepth += 1;
                     }

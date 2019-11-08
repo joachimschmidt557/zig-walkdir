@@ -15,12 +15,15 @@ pub const BreadthFirstWalker = struct {
     hidden       : bool,
 
     currentDir   : std.fs.Dir,
+    currentIter  : std.fs.Dir.Iterator,
     currentPath  : []u8,
     currentDepth : u32,
 
     pub const Self = @This();
 
     pub fn init(alloc: *std.mem.Allocator, path: []u8, max_depth: ?u32, include_hidden: bool) !Self {
+        var topDir = try std.fs.Dir.open(path);
+
         return Self{
             .startPath    = path,
             .pathsToScan  = std.atomic.Queue(*PathDepthPair).init(),
@@ -28,7 +31,8 @@ pub const BreadthFirstWalker = struct {
             .maxDepth     = max_depth,
             .hidden       = include_hidden,
 
-            .currentDir   = try std.fs.Dir.open(path),
+            .currentDir   = topDir,
+            .currentIter  = topDir.iterate(),
             .currentPath  = path,
             .currentDepth = 0,
         };
@@ -36,7 +40,7 @@ pub const BreadthFirstWalker = struct {
 
     pub fn next(self: *Self) !?Entry {
         outer: while (true) {
-            if (try self.currentDir.next()) |entry| {
+            if (try self.currentIter.next()) |entry| {
                 // Check if the entry is hidden
                 if (!self.hidden and entry.name[0] == '.') {
                     continue :outer;
@@ -88,6 +92,7 @@ pub const BreadthFirstWalker = struct {
                     self.currentPath = pair.path;
                     self.currentDepth = pair.depth;
                     self.currentDir = try std.fs.Dir.open(self.currentPath);
+                    self.currentIter = self.currentDir.iterate();
 
                     self.allocator.destroy(&pair);
                     self.allocator.destroy(node);

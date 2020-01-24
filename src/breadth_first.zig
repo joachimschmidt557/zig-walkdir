@@ -5,21 +5,21 @@ const Entry = @import("entry.zig").Entry;
 const PathsQueue = std.atomic.Queue(*PathDepthPair);
 
 const PathDepthPair = struct {
-    path         : []const u8,
-    depth        : u32,
+    path: []const u8,
+    depth: u32,
 };
 
 pub const BreadthFirstWalker = struct {
-    start_path     : []const u8,
-    paths_to_scan  : PathsQueue,
-    allocator      : *std.mem.Allocator,
-    max_depth      : ?u32,
-    hidden         : bool,
+    start_path: []const u8,
+    paths_to_scan: PathsQueue,
+    allocator: *std.mem.Allocator,
+    max_depth: ?u32,
+    hidden: bool,
 
-    current_dir    : std.fs.Dir,
-    current_iter   : std.fs.Dir.Iterator,
-    current_path   : []const u8,
-    current_depth  : u32,
+    current_dir: std.fs.Dir,
+    current_iter: std.fs.Dir.Iterator,
+    current_path: []const u8,
+    current_depth: u32,
 
     pub const Self = @This();
 
@@ -27,15 +27,15 @@ pub const BreadthFirstWalker = struct {
         var topDir = try std.fs.Dir.open(path);
 
         return Self{
-            .start_path    = path,
-            .paths_to_scan  = PathsQueue.init(),
-            .allocator    = alloc,
-            .max_depth     = max_depth,
-            .hidden       = include_hidden,
+            .start_path = path,
+            .paths_to_scan = PathsQueue.init(),
+            .allocator = alloc,
+            .max_depth = max_depth,
+            .hidden = include_hidden,
 
-            .current_dir   = topDir,
-            .current_iter  = topDir.iterate(),
-            .current_path  = path,
+            .current_dir = topDir,
+            .current_iter = topDir.iterate(),
+            .current_path = path,
             .current_depth = 0,
         };
     }
@@ -52,7 +52,7 @@ pub const BreadthFirstWalker = struct {
                 std.mem.copy(u8, full_entry_path, self.current_path);
                 full_entry_path[self.current_path.len] = std.fs.path.sep;
                 std.mem.copy(u8, full_entry_path[self.current_path.len + 1 ..], entry.name);
-    
+
                 // Remember this directory, we are going to traverse it later
                 blk: {
                     if (entry.kind == std.fs.Dir.Entry.Kind.Directory) {
@@ -63,13 +63,13 @@ pub const BreadthFirstWalker = struct {
                         }
 
                         const pair = try self.allocator.create(PathDepthPair);
-                        pair.* = PathDepthPair {
+                        pair.* = PathDepthPair{
                             .path = full_entry_path,
                             .depth = self.current_depth + 1,
                         };
 
                         const new_dir = try self.allocator.create(PathsQueue.Node);
-                        new_dir.* = PathsQueue.Node {
+                        new_dir.* = PathsQueue.Node{
                             .next = undefined,
                             .prev = undefined,
                             .data = pair,
@@ -78,11 +78,11 @@ pub const BreadthFirstWalker = struct {
                         self.paths_to_scan.put(new_dir);
                     }
                 }
-    
+
                 return Entry{
                     .name = entry.name,
                     .absolute_path = full_entry_path,
-                    .relative_path = full_entry_path[self.start_path.len + 1..],
+                    .relative_path = full_entry_path[self.start_path.len + 1 ..],
                     .kind = entry.kind,
                 };
             } else {

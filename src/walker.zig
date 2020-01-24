@@ -1,4 +1,3 @@
 const std = @import("std");
 
-pub const Walker = struct {
-};
+pub const Walker = struct {};

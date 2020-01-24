@@ -6,4 +6,3 @@ pub const Entry = struct {
     relative_path: []u8,
     kind: std.fs.Dir.Entry.Kind,
 };
-

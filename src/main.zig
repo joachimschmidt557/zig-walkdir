@@ -12,31 +12,31 @@ pub const TraversalMethod = enum {
 };
 
 pub const WalkDirOptions = struct {
-    method          : TraversalMethod,
-    follow_symlinks : bool,
-    include_hidden  : bool,
-    max_depth       : ?u32,
+    method: TraversalMethod,
+    follow_symlinks: bool,
+    include_hidden: bool,
+    max_depth: ?u32,
 
     const Self = @This();
 
     pub fn default() Self {
         return Self{
-            .method          = TraversalMethod.BreadthFirst,
+            .method = TraversalMethod.BreadthFirst,
             .follow_symlinks = false,
-            .include_hidden  = false,
-            .max_depth       = null,
+            .include_hidden = false,
+            .max_depth = null,
         };
     }
 };
 
 pub const Walker = struct {
-    internal_walker : *DepthFirstWalker,
+    internal_walker: *DepthFirstWalker,
 
     pub const Self = @This();
 
     pub fn init(alloc: *std.mem.Allocator, path: []u8, options: WalkDirOptions) !Self {
         return Self{
-            .internal_walker = & try DepthFirstWalker.init(alloc, path),
+            .internal_walker = &try DepthFirstWalker.init(alloc, path),
         };
     }
 
@@ -45,5 +45,4 @@ pub const Walker = struct {
     }
 };
 
-pub const MultiWalker = struct {
-};
+pub const MultiWalker = struct {};

@@ -37,7 +37,7 @@ pub const DepthFirstWalker = struct {
 
             .currentDir = top_dir,
             .currentIter = top_dir.iterate(),
-            .currentPath = path,
+            .currentPath = try std.mem.dupe(alloc, u8, path),
             .currentDepth = 0,
         };
     }
@@ -61,7 +61,7 @@ pub const DepthFirstWalker = struct {
                         const new = PathDirTuple{
                             .dir = self.currentDir,
                             .iter = self.currentIter,
-                            .path = try std.mem.dupe(self.allocator, u8, self.currentPath),
+                            .path = self.currentPath,
                         };
 
                         const new_dir = try self.allocator.create(RecurseStack.Node);
@@ -76,7 +76,7 @@ pub const DepthFirstWalker = struct {
 
                         // Go one level deeper
                         var opened_dir = try std.fs.Dir.open(full_entry_path);
-                        self.currentPath = full_entry_path;
+                        self.currentPath = try std.mem.dupe(self.allocator, u8, full_entry_path);
                         self.currentDir = opened_dir;
                         self.currentIter = opened_dir.iterate();
                         self.currentDepth += 1;
@@ -93,6 +93,8 @@ pub const DepthFirstWalker = struct {
             } else {
                 // No entries left in the current dir
                 self.currentDir.close();
+                self.allocator.free(self.currentPath);
+
                 if (self.recurseStack.pop()) |node| {
                     // Go back up one level again
                     self.currentDir = node.data.dir;
@@ -101,7 +103,6 @@ pub const DepthFirstWalker = struct {
                     self.currentDepth -= 1;
 
                     self.allocator.destroy(node);
-                    self.allocator.free(node.data.path);
 
                     continue :outer;
                 }

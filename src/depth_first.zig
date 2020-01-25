@@ -61,7 +61,7 @@ pub const DepthFirstWalker = struct {
                         const new = PathDirTuple{
                             .dir = self.currentDir,
                             .iter = self.currentIter,
-                            .path = self.currentPath,
+                            .path = try std.mem.dupe(self.allocator, u8, self.currentPath),
                         };
 
                         const new_dir = try self.allocator.create(RecurseStack.Node);
@@ -101,6 +101,7 @@ pub const DepthFirstWalker = struct {
                     self.currentDepth -= 1;
 
                     self.allocator.destroy(node);
+                    self.allocator.free(node.data.path);
 
                     continue :outer;
                 }

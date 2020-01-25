@@ -1,4 +1,5 @@
 const std = @import("std");
+const Allocator = std.mem.Allocator;
 
 const Entry = @import("entry.zig").Entry;
 
@@ -12,7 +13,7 @@ const PathDepthPair = struct {
 pub const BreadthFirstWalker = struct {
     start_path: []const u8,
     paths_to_scan: PathsQueue,
-    allocator: *std.mem.Allocator,
+    allocator: *Allocator,
     max_depth: ?u32,
     hidden: bool,
 
@@ -23,7 +24,7 @@ pub const BreadthFirstWalker = struct {
 
     pub const Self = @This();
 
-    pub fn init(alloc: *std.mem.Allocator, path: []const u8, max_depth: ?u32, include_hidden: bool) !Self {
+    pub fn init(alloc: *Allocator, path: []const u8, max_depth: ?u32, include_hidden: bool) !Self {
         var topDir = try std.fs.Dir.open(path);
 
         return Self{
@@ -80,6 +81,7 @@ pub const BreadthFirstWalker = struct {
                 }
 
                 return Entry{
+                    .allocator = self.allocator,
                     .name = entry.name,
                     .absolute_path = full_entry_path,
                     .relative_path = full_entry_path[self.start_path.len + 1 ..],

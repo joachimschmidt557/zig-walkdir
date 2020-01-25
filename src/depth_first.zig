@@ -1,4 +1,5 @@
 const std = @import("std");
+const Allocator = std.mem.Allocator;
 
 const Entry = @import("entry.zig").Entry;
 
@@ -13,7 +14,7 @@ const RecurseStack = std.atomic.Stack(*PathDirTuple);
 pub const DepthFirstWalker = struct {
     startPath: []const u8,
     recurseStack: RecurseStack,
-    allocator: *std.mem.Allocator,
+    allocator: *Allocator,
     maxDepth: ?u32,
     hidden: bool,
 
@@ -24,7 +25,7 @@ pub const DepthFirstWalker = struct {
 
     pub const Self = @This();
 
-    pub fn init(alloc: *std.mem.Allocator, path: []const u8, max_depth: ?u32, include_hidden: bool) !Self {
+    pub fn init(alloc: *Allocator, path: []const u8, max_depth: ?u32, include_hidden: bool) !Self {
         var top_dir = try std.fs.Dir.open(path);
 
         return Self{
@@ -84,6 +85,7 @@ pub const DepthFirstWalker = struct {
                 }
 
                 return Entry{
+                    .allocator = self.allocator,
                     .name = entry.name,
                     .absolute_path = full_entry_path,
                     .relative_path = full_entry_path[self.startPath.len + 1 ..],

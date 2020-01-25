@@ -11,6 +11,6 @@ pub const Entry = struct {
     const Self = @This();
 
     pub fn deinit(self: Self) void {
-        self.alloc.free(absolute_path);
+        self.allocator.free(absolute_path);
     }
 };

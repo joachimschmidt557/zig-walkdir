@@ -9,7 +9,7 @@ const PathDirTuple = struct {
     path: []const u8,
 };
 
-const RecurseStack = std.atomic.Stack(*PathDirTuple);
+const RecurseStack = std.atomic.Stack(PathDirTuple);
 
 pub const DepthFirstWalker = struct {
     startPath: []const u8,
@@ -58,8 +58,7 @@ pub const DepthFirstWalker = struct {
                             }
                         }
 
-                        const new = try self.allocator.create(PathDirTuple);
-                        new.* = PathDirTuple{
+                        const new = PathDirTuple{
                             .dir = self.currentDir,
                             .iter = self.currentIter,
                             .path = self.currentPath,
@@ -101,7 +100,6 @@ pub const DepthFirstWalker = struct {
                     self.currentPath = node.data.path;
                     self.currentDepth -= 1;
 
-                    self.allocator.destroy(node.data);
                     self.allocator.destroy(node);
 
                     continue :outer;

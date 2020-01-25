@@ -3,7 +3,7 @@ const Allocator = std.mem.Allocator;
 
 const Entry = @import("entry.zig").Entry;
 
-const PathsQueue = std.atomic.Queue(*PathDepthPair);
+const PathsQueue = std.atomic.Queue(PathDepthPair);
 
 const PathDepthPair = struct {
     path: []const u8,
@@ -63,8 +63,7 @@ pub const BreadthFirstWalker = struct {
                             }
                         }
 
-                        const pair = try self.allocator.create(PathDepthPair);
-                        pair.* = PathDepthPair{
+                        const pair = PathDepthPair{
                             .path = full_entry_path,
                             .depth = self.current_depth + 1,
                         };
@@ -91,14 +90,13 @@ pub const BreadthFirstWalker = struct {
                 // No entries left in the current dir
                 self.current_dir.close();
                 if (self.paths_to_scan.get()) |node| {
-                    const pair = node.data.*;
+                    const pair = node.data;
 
                     self.current_path = pair.path;
                     self.current_depth = pair.depth;
                     self.current_dir = try std.fs.Dir.open(self.current_path);
                     self.current_iter = self.current_dir.iterate();
 
-                    self.allocator.destroy(&pair);
                     self.allocator.destroy(node);
 
                     continue :outer;

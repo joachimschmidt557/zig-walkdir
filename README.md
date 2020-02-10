@@ -1,5 +1,7 @@
 # zig-walkdir
 
+[![Build Status](https://travis-ci.org/joachimschmidt557/zig-walkdir.svg?branch=master)](https://travis-ci.org/joachimschmidt557/zig-walkdir)
+
 A zig package providing functions for recursively traversing directories.
 
 ## Todo

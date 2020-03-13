@@ -15,17 +15,17 @@ pub const DepthFirstWalker = struct {
     startPath: []const u8,
     recurseStack: RecurseStack,
     allocator: *Allocator,
-    maxDepth: ?u32,
+    maxDepth: ?usize,
     hidden: bool,
 
     currentDir: std.fs.Dir,
     currentIter: std.fs.Dir.Iterator,
     currentPath: []const u8,
-    currentDepth: u32,
+    currentDepth: usize,
 
     pub const Self = @This();
 
-    pub fn init(alloc: *Allocator, path: []const u8, max_depth: ?u32, include_hidden: bool) !Self {
+    pub fn init(alloc: *Allocator, path: []const u8, max_depth: ?usize, include_hidden: bool) !Self {
         var top_dir = try std.fs.Dir.open(path);
 
         return Self{

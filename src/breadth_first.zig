@@ -7,24 +7,24 @@ const PathsQueue = std.atomic.Queue(PathDepthPair);
 
 const PathDepthPair = struct {
     path: []const u8,
-    depth: u32,
+    depth: usize,
 };
 
 pub const BreadthFirstWalker = struct {
     start_path: []const u8,
     paths_to_scan: PathsQueue,
     allocator: *Allocator,
-    max_depth: ?u32,
+    max_depth: ?usize,
     hidden: bool,
 
     current_dir: std.fs.Dir,
     current_iter: std.fs.Dir.Iterator,
     current_path: []const u8,
-    current_depth: u32,
+    current_depth: usize,
 
     pub const Self = @This();
 
-    pub fn init(alloc: *Allocator, path: []const u8, max_depth: ?u32, include_hidden: bool) !Self {
+    pub fn init(alloc: *Allocator, path: []const u8, max_depth: ?usize, include_hidden: bool) !Self {
         var topDir = try std.fs.Dir.open(path);
 
         return Self{

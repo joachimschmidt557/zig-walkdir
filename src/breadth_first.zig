@@ -25,7 +25,7 @@ pub const BreadthFirstWalker = struct {
     pub const Self = @This();
 
     pub fn init(alloc: *Allocator, path: []const u8, max_depth: ?usize, include_hidden: bool) !Self {
-        var topDir = try std.fs.Dir.open(path);
+        var topDir = try std.fs.cwd().openDir(path, .{ .iterate = true });
 
         return Self{
             .start_path = path,
@@ -94,7 +94,7 @@ pub const BreadthFirstWalker = struct {
 
                     self.current_path = pair.path;
                     self.current_depth = pair.depth;
-                    self.current_dir = try std.fs.Dir.open(self.current_path);
+                    self.current_dir = try std.fs.cwd().openDir(self.current_path, .{ .iterate = true });
                     self.current_iter = self.current_dir.iterate();
 
                     self.allocator.destroy(node);

@@ -26,7 +26,7 @@ pub const DepthFirstWalker = struct {
     pub const Self = @This();
 
     pub fn init(alloc: *Allocator, path: []const u8, max_depth: ?usize, include_hidden: bool) !Self {
-        var top_dir = try std.fs.Dir.open(path);
+        var top_dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
 
         return Self{
             .startPath = path,
@@ -75,7 +75,7 @@ pub const DepthFirstWalker = struct {
                         self.recurseStack.push(new_dir);
 
                         // Go one level deeper
-                        var opened_dir = try std.fs.Dir.open(full_entry_path);
+                        var opened_dir = try std.fs.cwd().openDir(full_entry_path, .{ .iterate = true });
                         self.currentPath = try std.mem.dupe(self.allocator, u8, full_entry_path);
                         self.currentDir = opened_dir;
                         self.currentIter = opened_dir.iterate();

@@ -2,6 +2,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 const Entry = @import("entry.zig").Entry;
+const Options = @import("options.zig").Options;
 
 const PathsQueue = std.atomic.Queue(PathDepthPair);
 
@@ -24,15 +25,15 @@ pub const BreadthFirstWalker = struct {
 
     pub const Self = @This();
 
-    pub fn init(alloc: *Allocator, path: []const u8, max_depth: ?usize, include_hidden: bool) !Self {
+    pub fn init(alloc: *Allocator, path: []const u8, options: Options) !Self {
         var topDir = try std.fs.cwd().openDir(path, .{ .iterate = true });
 
         return Self{
             .start_path = path,
             .paths_to_scan = PathsQueue.init(),
             .allocator = alloc,
-            .max_depth = max_depth,
-            .hidden = include_hidden,
+            .max_depth = options.max_depth,
+            .hidden = options.include_hidden,
 
             .current_dir = topDir,
             .current_iter = topDir.iterate(),

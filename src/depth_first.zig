@@ -2,6 +2,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 const Entry = @import("entry.zig").Entry;
+const Options = @import("options.zig").Options;
 
 const PathDirTuple = struct {
     dir: std.fs.Dir,
@@ -15,7 +16,7 @@ pub const DepthFirstWalker = struct {
     startPath: []const u8,
     recurseStack: RecurseStack,
     allocator: *Allocator,
-    maxDepth: ?usize,
+    max_depth: ?usize,
     hidden: bool,
 
     currentDir: std.fs.Dir,
@@ -25,15 +26,15 @@ pub const DepthFirstWalker = struct {
 
     pub const Self = @This();
 
-    pub fn init(alloc: *Allocator, path: []const u8, max_depth: ?usize, include_hidden: bool) !Self {
+    pub fn init(alloc: *Allocator, path: []const u8, options: Options) !Self {
         var top_dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
 
         return Self{
             .startPath = path,
             .recurseStack = RecurseStack.init(),
             .allocator = alloc,
-            .maxDepth = max_depth,
-            .hidden = include_hidden,
+            .max_depth = options.max_depth,
+            .hidden = options.include_hidden,
 
             .currentDir = top_dir,
             .currentIter = top_dir.iterate(),
@@ -52,7 +53,7 @@ pub const DepthFirstWalker = struct {
 
                 blk: {
                     if (entry.kind == std.fs.Dir.Entry.Kind.Directory) {
-                        if (self.maxDepth) |max_depth| {
+                        if (self.max_depth) |max_depth| {
                             if (self.currentDepth >= max_depth) {
                                 break :blk;
                             }

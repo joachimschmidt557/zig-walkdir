@@ -107,7 +107,6 @@ pub const DepthFirstWalker = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        while (self.recurse_stack.popOrNull()) |node| {}
         self.recurse_stack.deinit();
     }
 };

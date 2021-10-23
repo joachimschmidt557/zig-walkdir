@@ -100,7 +100,6 @@ pub const BreadthFirstWalker = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        while (self.paths_to_scan.popOrNull()) |node| {}
         self.paths_to_scan.deinit();
     }
 };

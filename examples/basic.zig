@@ -11,10 +11,12 @@ pub fn main() !void {
     var walker = try walkdir.BreadthFirstWalker.init(allocator, ".", .{});
     defer walker.deinit();
 
+    const stdout = std.io.getStdOut();
+
     while (true) {
         if (walker.next()) |entry| {
             if (entry) |e| {
-                std.log.info("{}", .{e.name});
+                try stdout.writer().print("{s}\n", .{e.name});
                 e.deinit();
             } else {
                 break;

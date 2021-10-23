@@ -3,7 +3,7 @@ const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 
 const Entry = @import("entry.zig").Entry;
-const Options = @import("options.zig").Options;
+const Options = @import("Options.zig");
 
 const PathDirTuple = struct {
     iter: std.fs.Dir.Iterator,

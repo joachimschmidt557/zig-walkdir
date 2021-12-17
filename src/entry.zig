@@ -2,7 +2,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 pub const Entry = struct {
-    allocator: *Allocator,
+    allocator: Allocator,
 
     /// The file or directory name of the entry
     name: []const u8,

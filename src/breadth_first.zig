@@ -13,7 +13,7 @@ const PathDepthPair = struct {
 pub const BreadthFirstWalker = struct {
     start_path: []const u8,
     paths_to_scan: ArrayList(PathDepthPair),
-    allocator: *Allocator,
+    allocator: Allocator,
     max_depth: ?usize,
     hidden: bool,
 
@@ -24,7 +24,7 @@ pub const BreadthFirstWalker = struct {
 
     pub const Self = @This();
 
-    pub fn init(allocator: *Allocator, path: []const u8, options: Options) !Self {
+    pub fn init(allocator: Allocator, path: []const u8, options: Options) !Self {
         var top_dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
 
         return Self{

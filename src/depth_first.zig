@@ -13,7 +13,7 @@ const PathDirTuple = struct {
 pub const DepthFirstWalker = struct {
     start_path: []const u8,
     recurse_stack: ArrayList(PathDirTuple),
-    allocator: *Allocator,
+    allocator: Allocator,
     max_depth: ?usize,
     hidden: bool,
 
@@ -24,7 +24,7 @@ pub const DepthFirstWalker = struct {
 
     pub const Self = @This();
 
-    pub fn init(alloc: *Allocator, path: []const u8, options: Options) !Self {
+    pub fn init(alloc: Allocator, path: []const u8, options: Options) !Self {
         var top_dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
 
         return Self{

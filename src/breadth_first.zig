@@ -2,7 +2,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 
-const Entry = @import("entry.zig").Entry;
+const Entry = @import("Entry.zig");
 const Options = @import("Options.zig");
 
 const PathDepthPair = struct {
@@ -17,15 +17,15 @@ pub const BreadthFirstWalker = struct {
     max_depth: ?usize,
     hidden: bool,
 
-    current_dir: std.fs.Dir,
-    current_iter: std.fs.Dir.Iterator,
+    current_dir: std.fs.IterableDir,
+    current_iter: std.fs.IterableDir.Iterator,
     current_path: []const u8,
     current_depth: usize,
 
     pub const Self = @This();
 
     pub fn init(allocator: Allocator, path: []const u8, options: Options) !Self {
-        var top_dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
+        var top_dir = try std.fs.cwd().openIterableDir(path, .{});
 
         return Self{
             .start_path = path,
@@ -58,7 +58,7 @@ pub const BreadthFirstWalker = struct {
 
                 // Remember this directory, we are going to traverse it later
                 blk: {
-                    if (entry.kind == std.fs.Dir.Entry.Kind.Directory) {
+                    if (entry.kind == std.fs.IterableDir.Entry.Kind.Directory) {
                         if (self.max_depth) |max_depth| {
                             if (self.current_depth >= max_depth) {
                                 break :blk;
@@ -89,7 +89,7 @@ pub const BreadthFirstWalker = struct {
 
                     self.current_path = pair.path;
                     self.current_depth = pair.depth;
-                    self.current_dir = try std.fs.cwd().openDir(self.current_path, .{ .iterate = true });
+                    self.current_dir = try std.fs.cwd().openIterableDir(self.current_path, .{});
                     self.current_iter = self.current_dir.iterate();
 
                     continue :outer;

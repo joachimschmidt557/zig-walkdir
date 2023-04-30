@@ -26,7 +26,7 @@ pub fn build(b: *Build) void {
     });
     example.addModule("walkdir", module);
 
-    var example_run = example.run();
+    var example_run = b.addRunArtifact(example);
 
     const example_step = b.step("example", "Run example");
     example_step.dependOn(&example_run.step);

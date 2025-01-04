@@ -1,16 +1,15 @@
 const Build = @import("std").Build;
-const FileSource = Build.FileSource;
 
 pub fn build(b: *Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
     const module = b.addModule("walkdir", .{
-        .source_file = .{ .path = "src/main.zig" },
+        .root_source_file = b.path("src/main.zig"),
     });
 
     var main_tests = b.addTest(.{
-        .root_source_file = FileSource.relative("src/main.zig"),
+        .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -20,11 +19,11 @@ pub fn build(b: *Build) void {
 
     var example = b.addExecutable(.{
         .name = "example",
-        .root_source_file = FileSource.relative("examples/basic.zig"),
+        .root_source_file = b.path("examples/basic.zig"),
         .target = target,
         .optimize = optimize,
     });
-    example.addModule("walkdir", module);
+    example.root_module.addImport("walkdir", module);
 
     var example_run = b.addRunArtifact(example);
 

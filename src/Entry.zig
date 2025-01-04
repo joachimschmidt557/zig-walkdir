@@ -13,7 +13,7 @@ absolute_path: []const u8,
 
 /// The path relative to the traversal start
 relative_path: []const u8,
-kind: std.fs.IterableDir.Entry.Kind,
+kind: std.fs.Dir.Entry.Kind,
 
 pub fn deinit(entry: Entry) void {
     entry.allocator.free(entry.absolute_path);

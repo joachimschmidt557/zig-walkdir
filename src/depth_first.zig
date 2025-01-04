@@ -6,7 +6,7 @@ const Entry = @import("Entry.zig");
 const Options = @import("Options.zig");
 
 const PathDirTuple = struct {
-    iter: std.fs.IterableDir.Iterator,
+    iter: std.fs.Dir.Iterator,
     path: []const u8,
 };
 
@@ -17,15 +17,15 @@ pub const DepthFirstWalker = struct {
     max_depth: ?usize,
     hidden: bool,
 
-    current_dir: std.fs.IterableDir,
-    current_iter: std.fs.IterableDir.Iterator,
+    current_dir: std.fs.Dir,
+    current_iter: std.fs.Dir.Iterator,
     current_path: []const u8,
     current_depth: usize,
 
     pub const Self = @This();
 
     pub fn init(allocator: Allocator, path: []const u8, options: Options) !Self {
-        var top_dir = try std.fs.cwd().openIterableDir(path, .{});
+        var top_dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
 
         return Self{
             .start_path = path,
@@ -50,14 +50,14 @@ pub const DepthFirstWalker = struct {
                 }
 
                 const full_entry_path = try self.allocator.alloc(u8, self.current_path.len + entry.name.len + 1);
-                std.mem.copy(u8, full_entry_path, self.current_path);
+                @memcpy(full_entry_path[0..self.current_path.len], self.current_path);
                 full_entry_path[self.current_path.len] = std.fs.path.sep;
-                std.mem.copy(u8, full_entry_path[self.current_path.len + 1 ..], entry.name);
+                @memcpy(full_entry_path[self.current_path.len + 1 ..], entry.name);
                 const relative_path = full_entry_path[self.start_path.len + 1 ..];
                 const name = full_entry_path[self.current_path.len + 1 ..];
 
                 blk: {
-                    if (entry.kind == std.fs.IterableDir.Entry.Kind.Directory) {
+                    if (entry.kind == .directory) {
                         if (self.max_depth) |max_depth| {
                             if (self.current_depth >= max_depth) {
                                 break :blk;
@@ -72,7 +72,7 @@ pub const DepthFirstWalker = struct {
                         });
 
                         // Go one level deeper
-                        var opened_dir = try std.fs.cwd().openIterableDir(full_entry_path, .{});
+                        var opened_dir = try std.fs.cwd().openDir(full_entry_path, .{ .iterate = true });
                         self.current_path = try self.allocator.dupe(u8, full_entry_path);
                         self.current_dir = opened_dir;
                         self.current_iter = opened_dir.iterate();
@@ -94,7 +94,7 @@ pub const DepthFirstWalker = struct {
 
                 if (self.recurse_stack.popOrNull()) |node| {
                     // Go back up one level again
-                    self.current_dir = .{ .dir = node.iter.dir };
+                    self.current_dir = node.iter.dir;
                     self.current_iter = node.iter;
                     self.current_path = node.path;
                     self.current_depth -= 1;

@@ -17,15 +17,15 @@ pub const BreadthFirstWalker = struct {
     max_depth: ?usize,
     hidden: bool,
 
-    current_dir: std.fs.IterableDir,
-    current_iter: std.fs.IterableDir.Iterator,
+    current_dir: std.fs.Dir,
+    current_iter: std.fs.Dir.Iterator,
     current_path: []const u8,
     current_depth: usize,
 
     pub const Self = @This();
 
     pub fn init(allocator: Allocator, path: []const u8, options: Options) !Self {
-        var top_dir = try std.fs.cwd().openIterableDir(path, .{});
+        var top_dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
 
         return Self{
             .start_path = path,
@@ -50,15 +50,15 @@ pub const BreadthFirstWalker = struct {
                 }
 
                 const full_entry_path = try self.allocator.alloc(u8, self.current_path.len + entry.name.len + 1);
-                std.mem.copy(u8, full_entry_path, self.current_path);
+                @memcpy(full_entry_path[0..self.current_path.len], self.current_path);
                 full_entry_path[self.current_path.len] = std.fs.path.sep;
-                std.mem.copy(u8, full_entry_path[self.current_path.len + 1 ..], entry.name);
+                @memcpy(full_entry_path[self.current_path.len + 1 ..], entry.name);
                 const relative_path = full_entry_path[self.start_path.len + 1 ..];
                 const name = full_entry_path[self.current_path.len + 1 ..];
 
                 // Remember this directory, we are going to traverse it later
                 blk: {
-                    if (entry.kind == std.fs.IterableDir.Entry.Kind.Directory) {
+                    if (entry.kind == .directory) {
                         if (self.max_depth) |max_depth| {
                             if (self.current_depth >= max_depth) {
                                 break :blk;
@@ -89,7 +89,7 @@ pub const BreadthFirstWalker = struct {
 
                     self.current_path = pair.path;
                     self.current_depth = pair.depth;
-                    self.current_dir = try std.fs.cwd().openIterableDir(self.current_path, .{});
+                    self.current_dir = try std.fs.cwd().openDir(self.current_path, .{ .iterate = true });
                     self.current_iter = self.current_dir.iterate();
 
                     continue :outer;

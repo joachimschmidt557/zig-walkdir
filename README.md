@@ -1,7 +1,7 @@
 # zig-walkdir
 
 A zig package providing functions for recursively traversing directories.
-Works with zig 0.14.0.
+Works with zig 0.13.0.
 
 ## Todo
 

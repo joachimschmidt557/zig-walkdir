@@ -1,6 +1,7 @@
 .{
-    .name = "walkdir",
+    .name = .walkdir,
     .version = "0.1.0",
+    .fingerprint = 0x8204a468f5d35cb7,
     .dependencies = .{},
     .paths = .{
         "build.zig",

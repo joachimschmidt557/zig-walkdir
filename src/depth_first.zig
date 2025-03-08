@@ -1,6 +1,6 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const ArrayList = std.ArrayList;
+const ArrayList = std.ArrayListUnmanaged;
 
 const Entry = @import("Entry.zig");
 const Options = @import("Options.zig");
@@ -27,9 +27,9 @@ pub const DepthFirstWalker = struct {
     pub fn init(allocator: Allocator, path: []const u8, options: Options) !Self {
         var top_dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
 
-        return Self{
+        return .{
             .start_path = path,
-            .recurse_stack = ArrayList(PathDirTuple).init(allocator),
+            .recurse_stack = .empty,
             .allocator = allocator,
             .max_depth = options.max_depth,
             .hidden = options.include_hidden,
@@ -66,7 +66,7 @@ pub const DepthFirstWalker = struct {
 
                         // Save the current opened directory to the stack
                         // so we continue traversing it later on
-                        try self.recurse_stack.append(PathDirTuple{
+                        try self.recurse_stack.append(self.allocator, .{
                             .iter = self.current_iter,
                             .path = self.current_path,
                         });
@@ -92,7 +92,7 @@ pub const DepthFirstWalker = struct {
                 self.current_dir.close();
                 self.allocator.free(self.current_path);
 
-                if (self.recurse_stack.popOrNull()) |node| {
+                if (self.recurse_stack.pop()) |node| {
                     // Go back up one level again
                     self.current_dir = node.iter.dir;
                     self.current_iter = node.iter;
@@ -107,6 +107,6 @@ pub const DepthFirstWalker = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        self.recurse_stack.deinit();
+        self.recurse_stack.deinit(self.allocator);
     }
 };

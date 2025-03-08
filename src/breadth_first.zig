@@ -1,6 +1,6 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const ArrayList = std.ArrayList;
+const ArrayList = std.ArrayListUnmanaged;
 
 const Entry = @import("Entry.zig");
 const Options = @import("Options.zig");
@@ -27,9 +27,9 @@ pub const BreadthFirstWalker = struct {
     pub fn init(allocator: Allocator, path: []const u8, options: Options) !Self {
         var top_dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
 
-        return Self{
+        return .{
             .start_path = path,
-            .paths_to_scan = ArrayList(PathDepthPair).init(allocator),
+            .paths_to_scan = .empty,
             .allocator = allocator,
             .max_depth = options.max_depth,
             .hidden = options.include_hidden,
@@ -65,7 +65,7 @@ pub const BreadthFirstWalker = struct {
                             }
                         }
 
-                        try self.paths_to_scan.append(PathDepthPair{
+                        try self.paths_to_scan.append(self.allocator, .{
                             .path = try self.allocator.dupe(u8, full_entry_path),
                             .depth = self.current_depth + 1,
                         });
@@ -100,6 +100,6 @@ pub const BreadthFirstWalker = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        self.paths_to_scan.deinit();
+        self.paths_to_scan.deinit(self.allocator);
     }
 };
